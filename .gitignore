@@ -1,0 +1,7 @@
+# 不要提交敏感信息
+*.log
+*.txt
+.env
+cookie.txt
+__pycache__/
+*.pyc
