@@ -5,10 +5,10 @@ name: 福利吧自动签到
 # ============================================
 on:
   schedule:
-    # 早上 9:00 签到 (UTC 1:00 = 北京时间 9:00)
-    - cron: '0 1 * * *'
-    # 晚上 22:00 复查 (UTC 14:00 = 北京时间 22:00)
-    - cron: '0 14 * * *'
+    # 避开整点调度高峰：早上 00:05 签到 (UTC 16:05 = 北京时间 00:05)
+    - cron: '5 16 * * *'
+    # 避开整点调度高峰：早上 09:12 复查 (UTC 01:12 = 北京时间 09:12)
+    - cron: '12 1 * * *'
   # 支持手动触发（用于测试）
   workflow_dispatch:
 
@@ -35,17 +35,18 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt
 
-      # 4. 判断当前是签到还是复查
+      # 4. 判断当前是签到还是复查 (需同步修改匹配规则)
       - name: 判断运行模式
         id: mode
         run: |
           SCHEDULE="${{ github.event.schedule }}"
-          if [ "$SCHEDULE" = "0 1 * * *" ]; then
+          # 必须与上面的 cron 字符串完全一致，注意空格
+          if [ "$SCHEDULE" = "5 16 * * *" ]; then
             echo "mode=checkin" >> $GITHUB_OUTPUT
             echo "当前模式: 早起签到" >> $GITHUB_STEP_SUMMARY
-          elif [ "$SCHEDULE" = "0 14 * * *" ]; then
+          elif [ "$SCHEDULE" = "12 1 * * *" ]; then
             echo "mode=verify" >> $GITHUB_OUTPUT
-            echo "当前模式: 晚间复查" >> $GITHUB_STEP_SUMMARY
+            echo "当前模式: 早上复查" >> $GITHUB_STEP_SUMMARY
           else
             echo "mode=checkin" >> $GITHUB_OUTPUT
             echo "当前模式: 手动触发(默认签到)" >> $GITHUB_STEP_SUMMARY
